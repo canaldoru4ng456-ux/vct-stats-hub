@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VCT Stats Hub — Plataforma Pública de Estatísticas Competitivas</title>
+<meta name="description" content="Plataforma pública e não-oficial de estatísticas de Agentes, Armas e Mapas do cenário competitivo de VALORANT.">
+
+<style>
+  :root{
+    --bg-0:#0f1923;
+    --bg-1:#151f2b;
+    --bg-2:#1c2733;
+    --line:#2a3a4a;
+    --red:#ff4655;
+    --red-dim:#ff465533;
+    --white:#ece8e1;
+    --gray:#8b978f;
+    --gray-dark:#5a6670;
+    --green:#3ddc97;
+    --font: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html,body{
+    background:var(--bg-0);
+    color:var(--white);
+    font-family:var(--font);
+    scroll-behavior:smooth;
+  }
+
+  a{ color:inherit; text-decoration:none; }
+
+  /* ---------- TOPO: AVISO RSO ---------- */
+  .rso-banner{
+    background:linear-gradient(90deg, #1c2733, #23303e);
+    border-bottom:1px solid var(--red);
+    color:var(--gray);
+    font-size:0.78rem;
+    text-align:center;
+    padding:8px 16px;
+    line-height:1.4;
+  }
+  .rso-banner strong{ color:var(--red); }
+
+  /* ---------- HEADER ---------- */
+  header{
+    background:var(--bg-1);
+    border-bottom:1px solid var(--line);
+    position:sticky;
+    top:0;
+    z-index:50;
+  }
+  .header-inner{
+    max-width:1200px;
+    margin:0 auto;
+    padding:18px 24px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:800;
+    font-size:1.3rem;
+    letter-spacing:1px;
+    text-transform:uppercase;
+  }
+  .logo .mark{
+    width:34px; height:34px;
+    background:var(--red);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display:inline-block;
+  }
+  .logo span.sub{
+    color:var(--gray);
+    font-weight:400;
+    font-size:0.65rem;
+    display:block;
+    letter-spacing:2px;
+  }
+  nav.tabs{
+    display:flex;
+    gap:4px;
+    background:var(--bg-2);
+    padding:4px;
+    border-radius:8px;
+    border:1px solid var(--line);
+  }
+  nav.tabs button{
+    background:transparent;
+    border:none;
+    color:var(--gray);
+    font-family:var(--font);
+    font-weight:600;
+    font-size:0.85rem;
+    padding:9px 18px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:.2s;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+  }
+  nav.tabs button:hover{ color:var(--white); }
+  nav.tabs button.active{
+    background:var(--red);
+    color:#fff;
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    max-width:1200px;
+    margin:0 auto;
+    padding:48px 24px 24px;
+  }
+  .hero h1{
+    font-size:2.1rem;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:1px;
+  }
+  .hero h1 em{
+    font-style:normal;
+    color:var(--red);
+  }
+  .hero p{
+    color:var(--gray);
+    max-width:700px;
+    margin-top:10px;
+    font-size:0.95rem;
+    line-height:1.6;
+  }
+  .patch-tag{
+    display:inline-block;
+    margin-top:16px;
+    background:var(--bg-2);
+    border:1px solid var(--line);
+    color:var(--gray);
+    padding:6px 14px;
+    border-radius:20px;
+    font-size:0.75rem;
+    letter-spacing:0.5px;
+  }
+  .patch-tag b{ color:var(--green); }
+
+  /* ---------- CONTAINER ---------- */
+  main{
+    max-width:1200px;
+    margin:0 auto;
+    padding:16px 24px 60px;
+  }
+
+  .panel{ display:none; animation:fade .3s ease; }
+  .panel.active{ display:block; }
+  @keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  .toolbar{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    align-items:center;
+    margin:24px 0 20px;
+    justify-content:space-between;
+  }
+  .filters{ display:flex; gap:8px; flex-wrap:wrap; }
+  .filters select, .filters input{
+    background:var(--bg-2);
+    border:1px solid var(--line);
+    color:var(--white);
+    padding:9px 12px;
+    border-radius:6px;
+    font-family:var(--font);
+    font-size:0.85rem;
+  }
+  .filters select:focus, .filters input:focus{ outline:1px solid var(--red); }
+
+  .sort-note{ color:var(--gray-dark); font-size:0.78rem; }
+
+  /* ---------- GRID DE AGENTES ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(230px, 1fr));
+    gap:16px;
+  }
+  .card{
+    background:var(--bg-1);
+    border:1px solid var(--line);
+    border-radius:10px;
+    overflow:hidden;
+    transition:.2s;
+    position:relative;
+  }
+  .card:hover{
+    border-color:var(--red);
+    transform:translateY(-3px);
+  }
+  .card-top{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:16px;
+    border-bottom:1px solid var(--line);
+    background:var(--bg-2);
+  }
+  .avatar{
+    width:54px; height:54px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:800;
+    font-size:1.1rem;
+    color:#fff;
+    flex-shrink:0;
+    border:2px solid rgba(255,255,255,0.15);
+  }
+  .card-top .info h3{ font-size:1rem; }
+  .card-top .info .role{
+    color:var(--red);
+    font-size:0.72rem;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    font-weight:700;
+  }
+  .card-body{ padding:16px; }
+  .stat-row{
+    display:flex;
+    justify-content:space-between;
+    font-size:0.78rem;
+    color:var(--gray);
+    margin-bottom:6px;
+  }
+  .stat-row b{ color:var(--white); }
+  .bar-bg{
+    background:#0b1219;
+    border-radius:6px;
+    height:8px;
+    overflow:hidden;
+    margin-bottom:14px;
+  }
+  .bar-fill{
+    height:100%;
+    background:linear-gradient(90deg, var(--red), #ff8a94);
+    border-radius:6px;
+  }
+  .bar-fill.alt{ background:linear-gradient(90deg, #3ddc97, #8affce); }
+  .bar-fill.pick{ background:linear-gradient(90deg, #4a90e2, #8ec8ff); }
+
+  .tier{
+    position:absolute;
+    top:10px; right:10px;
+    font-size:0.65rem;
+    padding:3px 8px;
+    border-radius:4px;
+    font-weight:800;
+    letter-spacing:0.5px;
+  }
+  .tier.S{ background:var(--red); color:#fff; }
+  .tier.A{ background:#e8b84b; color:#20180a; }
+  .tier.B{ background:#4a90e2; color:#fff; }
+
+  /* ---------- TABELA DE ARMAS ---------- */
+  .table-wrap{
+    background:var(--bg-1);
+    border:1px solid var(--line);
+    border-radius:10px;
+    overflow:hidden;
+  }
+  table{ width:100%; border-collapse:collapse; }
+  thead th{
+    text-align:left;
+    background:var(--bg-2);
+    color:var(--gray);
+    font-size:0.72rem;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    padding:12px 16px;
+    border-bottom:1px solid var(--line);
+    cursor:pointer;
+    user-select:none;
+    white-space:nowrap;
+  }
+  thead th:hover{ color:var(--white); }
+  thead th.sorted{ color:var(--red); }
+  tbody td{
+    padding:12px 16px;
+    font-size:0.85rem;
+    border-bottom:1px solid var(--line);
+    color:var(--white);
+  }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody tr:hover{ background:rgba(255,70,85,0.05); }
+  .weapon-name{ font-weight:700; }
+  .weapon-cat{
+    font-size:0.68rem;
+    color:var(--gray-dark);
+    text-transform:uppercase;
+    display:block;
+  }
+  .mini-bar{
+    width:100px;
+    height:6px;
+    background:#0b1219;
+    border-radius:4px;
+    overflow:hidden;
+    display:inline-block;
+    vertical-align:middle;
+    margin-right:8px;
+  }
+  .mini-bar-fill{ height:100%; background:var(--red); }
+
+  /* ---------- MAPAS ---------- */
+  .map-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(260px,1fr));
+    gap:16px;
+  }
+  .map-card{
+    background:var(--bg-1);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:18px;
+    transition:.2s;
+  }
+  .map-card:hover{ border-color:var(--red); }
+  .map-card h3{ margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+  .map-card .badge{
+    background:var(--bg-2);
+    color:var(--gray);
+    font-size:0.68rem;
+    padding:3px 8px;
+    border-radius:4px;
+    border:1px solid var(--line);
+  }
+  .side-split{ display:flex; gap:8px; margin-top:10px; }
+  .side-box{
+    flex:1;
+    background:var(--bg-2);
+    border-radius:6px;
+    padding:10px;
+    text-align:center;
+  }
+  .side-box .pct{ font-size:1.3rem; font-weight:800; }
+  .side-box.att .pct{ color:#e8b84b; }
+  .side-box.def .pct{ color:#4a90e2; }
+  .side-box .lbl{ font-size:0.65rem; color:var(--gray-dark); text-transform:uppercase; letter-spacing:1px; }
+
+  /* ---------- BLOCO DE INTEGRAÇÃO API ---------- */
+  .api-note{
+    margin-top:40px;
+    background:var(--bg-1);
+    border:1px dashed var(--red-dim);
+    border-radius:10px;
+    padding:20px;
+    font-size:0.82rem;
+    color:var(--gray);
+  }
+  .api-note h4{
+    color:var(--red);
+    margin-bottom:8px;
+    font-size:0.85rem;
+    text-transform:uppercase;
+    letter-spacing:1px;
+  }
+  .api-note code{
+    background:#0b1219;
+    padding:2px 6px;
+    border-radius:4px;
+    color:var(--green);
+    font-size:0.78rem;
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    background:var(--bg-1);
+    border-top:1px solid var(--line);
+    padding:36px 24px 24px;
+    margin-top:40px;
+  }
+  .footer-inner{
+    max-width:1200px;
+    margin:0 auto;
+  }
+  .footer-inner h4{
+    color:var(--white);
+    font-size:0.85rem;
+    margin-bottom:10px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+  }
+  .legal-box{
+    color:var(--gray-dark);
+    font-size:0.72rem;
+    line-height:1.7;
+    border-top:1px solid var(--line);
+    padding-top:20px;
+    margin-top:20px;
+  }
+  .legal-box p{ margin-bottom:10px; }
+  .roadmap{
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
+    margin-bottom:10px;
+  }
+  .roadmap .step{
+    background:var(--bg-2);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:12px 16px;
+    flex:1;
+    min-width:180px;
+    font-size:0.78rem;
+    color:var(--gray);
+  }
+  .roadmap .step b{ color:var(--red); display:block; margin-bottom:4px; font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; }
+
+  @media(max-width:640px){
+    .header-inner{ flex-direction:column; align-items:flex-start; }
+    nav.tabs{ width:100%; overflow-x:auto; }
+    .hero h1{ font-size:1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= AVISO RSO (Riot Sign-On) ================= -->
+<div class="rso-banner">
+  ⚠️ <strong>Aviso de Roadmap:</strong> Esta plataforma utiliza atualmente apenas dados públicos/agregados e simulados. A integração com <strong>Riot Sign-On (RSO/OAuth2)</strong> para exibição de estatísticas individuais de jogadores autenticados está planejada para entrar em produção em até <strong>30 dias após a aprovação</strong> da chave de produção, conforme os termos do Riot Developer Portal.
+</div>
+
+<!-- ================= HEADER / NAV ================= -->
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <span class="mark"></span>
+      <div>
+        VCT STATS HUB
+        <span class="sub">Comunidade &middot; Não-oficial</span>
+      </div>
+    </div>
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="agents">Agentes</button>
+      <button class="tab-btn" data-tab="weapons">Armas</button>
+      <button class="tab-btn" data-tab="maps">Mapas</button>
+    </nav>
+  </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<div class="hero">
+  <h1>Estatísticas <em>Competitivas</em> de VALORANT</h1>
+  <p>
+    Plataforma pública e gratuita, mantida pela comunidade, que reúne taxas de escolha (pick rate) e
+    taxas de vitória (win rate) de Agentes, Armas e Mapas no cenário competitivo. Sem necessidade de
+    login, download ou criação de conta — todos os dados abaixo são públicos ou simulados para fins
+    de demonstração enquanto aguardamos aprovação de chave de produção junto à Riot Games.
+  </p>
+  <div class="patch-tag">Patch de referência: <b>10.02</b> &nbsp;|&nbsp; Amostra: <b>~1.2M partidas simuladas</b></div>
+</div>
+
+<main>
+
+  <!-- ========================================================= -->
+  <!-- ABA 1: AGENTES                                             -->
+  <!-- ========================================================= -->
+  <section id="agents" class="panel active">
+    <div class="toolbar">
+      <div class="filters">
+        <select id="roleFilter">
+          <option value="all">Todas as funções</option>
+          <option value="Duelista">Duelista</option>
+          <option value="Iniciador">Iniciador</option>
+          <option value="Controlador">Controlador</option>
+          <option value="Sentinela">Sentinela</option>
+        </select>
+        <select id="agentSort">
+          <option value="winrate">Ordenar: Win Rate</option>
+          <option value="pickrate">Ordenar: Pick Rate</option>
+          <option value="name">Ordenar: Nome (A-Z)</option>
+        </select>
+      </div>
+      <span class="sort-note">Dados simulados — ranked competitivo, todas as elos</span>
+    </div>
+
+    <div class="grid" id="agentGrid"></div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- ABA 2: ARMAS                                               -->
+  <!-- ========================================================= -->
+  <section id="weapons" class="panel">
+    <div class="toolbar">
+      <div class="filters">
+        <select id="weaponCatFilter">
+          <option value="all">Todas as categorias</option>
+          <option value="Rifle">Rifles</option>
+          <option value="SMG">SMGs</option>
+          <option value="Sniper">Snipers</option>
+          <option value="Pistol">Pistolas</option>
+          <option value="Shotgun">Shotguns</option>
+        </select>
+      </div>
+      <span class="sort-note">Clique nos cabeçalhos da tabela para ordenar</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th data-key="name">Arma</th>
+            <th data-key="damageBody">Dano (Torso)</th>
+            <th data-key="fireRate">Cadência</th>
+            <th data-key="price">Preço</th>
+            <th data-key="pickRate">Taxa de Uso</th>
+            <th data-key="winRate">Win Rate</th>
+          </tr>
+        </thead>
+        <tbody id="weaponTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- ABA 3: MAPAS                                               -->
+  <!-- ========================================================= -->
+  <section id="maps" class="panel">
+    <div class="toolbar">
+      <span class="sort-note">Distribuição de vitórias por lado (Ataque vs. Defesa) — dados simulados</span>
+    </div>
+    <div class="map-grid" id="mapGrid"></div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- BLOCO DOCUMENTADO PARA FUTURA INTEGRAÇÃO COM A RIOT API    -->
+  <!-- ========================================================= -->
+  <div class="api-note">
+    <h4>🔧 Integração futura com a Riot Games API</h4>
+    <p>
+      Este espaço e as funções JavaScript abaixo (ver <code>fetchLiveDataPlaceholder()</code> no código-fonte)
+      estão reservados para as chamadas <code>fetch()</code> reais assim que a chave de desenvolvedor/produção
+      for aprovada. Endpoints previstos de uso (somente leitura, conforme escopo solicitado):
+    </p>
+    <p>
+      • <code>/val/content/v1/contents</code> — metadados públicos de agentes, mapas, armas e temporadas (sem RSO).<br>
+      • <code>/val/match/v1/matches/{matchId}</code> — detalhes agregados de partidas (sem RSO, apenas leitura pública).<br>
+      • <code>/val/ranked/v1/leaderboards/by-act/{actId}</code> — leaderboard público por ato competitivo (sem RSO).<br>
+      • <code>/riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine}</code> — resolução de Riot ID, exigirá <strong>RSO</strong> quando vinculado a estatísticas privadas de um jogador autenticado (previsto na fase 2, ver aviso no topo).
+    </p>
+    <p>Nenhuma chave de API é exposta no front-end; chamadas de produção serão intermediadas por um backend/proxy dedicado, nunca diretamente pelo navegador do usuário.</p>
+  </div>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="footer-inner">
+    <h4>Roadmap de Conformidade</h4>
+    <div class="roadmap">
+      <div class="step"><b>Fase 1 — Atual</b>Dados públicos e simulados, sem autenticação, 100% testável sem login ou download.</div>
+      <div class="step"><b>Fase 2 — 0 a 30 dias após aprovação</b>Substituição dos dados simulados por chamadas reais aos endpoints públicos de conteúdo e partidas.</div>
+      <div class="step"><b>Fase 3 — Até 30 dias após aprovação</b>Implementação do fluxo Riot Sign-On (RSO/OAuth2) para exibição opcional de estatísticas privadas do próprio jogador autenticado.</div>
+    </div>
+
+    <div class="legal-box">
+      <p>
+        VCT Stats Hub não é endossado pela Riot Games e não reflete as opiniões ou pontos de vista da Riot Games
+        ou de qualquer pessoa oficialmente envolvida na produção ou gerenciamento das propriedades da Riot Games.
+        Riot Games e todas as propriedades associadas são marcas comerciais ou registradas da Riot Games, Inc.
+      </p>
+      <p>
+        Este projeto é mantido de forma independente pela comunidade, com fins informativos e não comerciais,
+        e utiliza (ou pretende utilizar, mediante aprovação) a API pública da Riot Games em conformidade com a
+        <a href="https://developer.riotgames.com/policies/general" target="_blank" rel="noopener">Política de Desenvolvedores da Riot Games</a>.
+        Nenhum dado privado de jogador é coletado, armazenado ou exibido sem consentimento explícito via Riot Sign-On.
+      </p>
+      <p>© 2026 VCT Stats Hub — Projeto de comunidade, sem fins lucrativos. Todos os direitos sobre VALORANT pertencem à Riot Games, Inc.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* =========================================================================
+   DADOS SIMULADOS (MOCK DATA)
+   -------------------------------------------------------------------------
+   Estes arrays substituem, por ora, o retorno de uma API real. Cada objeto
+   já está no formato esperado pelas funções de renderização, para que a
+   troca por dados reais (via fetch) exija o mínimo de refatoração possível.
+   ========================================================================= */
+
+const AGENTS = [
+  { name:"Jett",      role:"Duelista",    winRate:48.2, pickRate:22.4, color:"#7fd6e0", tier:"S" },
+  { name:"Reyna",     role:"Duelista",    winRate:46.8, pickRate:14.1, color:"#a13ddb", tier:"A" },
+  { name:"Raze",      role:"Duelista",    winRate:49.5, pickRate:11.7, color:"#e8862d", tier:"S" },
+  { name:"Phoenix",   role:"Duelista",    winRate:47.1, pickRate:9.3,  color:"#e8622d", tier:"B" },
+  { name:"Neon",      role:"Duelista",    winRate:47.9, pickRate:8.2,  color:"#4a9be8", tier:"B" },
+  { name:"Yoru",      role:"Duelista",    winRate:46.3, pickRate:5.6,  color:"#4a56e8", tier:"B" },
+  { name:"Sova",      role:"Iniciador",   winRate:50.3, pickRate:19.8, color:"#7d97a8", tier:"S" },
+  { name:"Breach",    role:"Iniciador",   winRate:49.0, pickRate:10.4, color:"#c9862d", tier:"A" },
+  { name:"Skye",      role:"Iniciador",   winRate:48.6, pickRate:9.9,  color:"#7dc97d", tier:"A" },
+  { name:"KAY/O",     role:"Iniciador",   winRate:48.1, pickRate:8.5,  color:"#8b97a8", tier:"B" },
+  { name:"Fade",      role:"Iniciador",   winRate:50.8, pickRate:12.6, color:"#5a3d6b", tier:"S" },
+  { name:"Sage",      role:"Sentinela",   winRate:50.1, pickRate:16.2, color:"#7de0c9", tier:"S" },
+  { name:"Killjoy",   role:"Sentinela",   winRate:51.4, pickRate:15.7, color:"#c9d62d", tier:"S" },
+  { name:"Cypher",    role:"Sentinela",   winRate:49.7, pickRate:13.3, color:"#8b8b8b", tier:"A" },
+  { name:"Chamber",   role:"Sentinela",   winRate:48.4, pickRate:7.1,  color:"#d6b04a", tier:"B" },
+  { name:"Deadlock",  role:"Sentinela",   winRate:47.6, pickRate:5.9,  color:"#4a6be0", tier:"B" },
+  { name:"Omen",      role:"Controlador", winRate:49.9, pickRate:18.5, color:"#4a3d6b", tier:"S" },
+  { name:"Brimstone", role:"Controlador", winRate:48.8, pickRate:11.2, color:"#c9622d", tier:"A" },
+  { name:"Viper",     role:"Controlador", winRate:50.5, pickRate:13.8, color:"#4a8b3d", tier:"S" },
+  { name:"Astra",     role:"Controlador", winRate:47.3, pickRate:6.4,  color:"#8b4ad6", tier:"B" },
+  { name:"Harbor",    role:"Controlador", winRate:47.8, pickRate:6.0,  color:"#2d97c9", tier:"B" },
+  { name:"Clove",     role:"Controlador", winRate:49.2, pickRate:9.7,  color:"#d62d97", tier:"A" },
+];
+
+const WEAPONS = [
+  { name:"Vandal",   category:"Rifle",   damageBody:39,  fireRate:9.75, price:2900, pickRate:38.4, winRate:51.2 },
+  { name:"Phantom",  category:"Rifle",   damageBody:39,  fireRate:11.0, price:2900, pickRate:34.1, winRate:50.8 },
+  { name:"Vandal (Anexo)", category:"Rifle", damageBody:35, fireRate:9.75, price:2900, pickRate:6.2, winRate:49.5 },
+  { name:"Guardian", category:"Rifle",   damageBody:65,  fireRate:5.25, price:2250, pickRate:2.8,  winRate:47.9 },
+  { name:"Bulldog",  category:"Rifle",   damageBody:35,  fireRate:9.15, price:2050, pickRate:3.1,  winRate:46.4 },
+  { name:"Operator", category:"Sniper",  damageBody:150, fireRate:0.6,  price:4700, pickRate:9.6,  winRate:52.7 },
+  { name:"Marshal",  category:"Sniper",  damageBody:101, fireRate:1.0,  price:950,  pickRate:2.4,  winRate:45.1 },
+  { name:"Outlaw",   category:"Sniper",  damageBody:140, fireRate:0.6,  price:2400, pickRate:4.7,  winRate:48.3 },
+  { name:"Spectre",  category:"SMG",     damageBody:26,  fireRate:13.33,price:1600, pickRate:8.9,  winRate:48.0 },
+  { name:"Stinger",  category:"SMG",     damageBody:27,  fireRate:16.0, price:1100, pickRate:1.6,  winRate:44.2 },
+  { name:"Classic",  category:"Pistol",  damageBody:26,  fireRate:6.75, price:0,    pickRate:100.0,winRate:41.0 },
+  { name:"Sheriff",  category:"Pistol",  damageBody:55,  fireRate:4.0,  price:800,  pickRate:22.3, winRate:47.6 },
+  { name:"Ghost",    category:"Pistol",  damageBody:30,  fireRate:6.75, price:500,  pickRate:18.9, winRate:45.8 },
+  { name:"Judge",    category:"Shotgun", damageBody:34,  fireRate:3.5,  price:1850, pickRate:1.9,  winRate:43.7 },
+  { name:"Bucky",    category:"Shotgun", damageBody:44,  fireRate:1.1,  price:850,  pickRate:1.2,  winRate:42.5 },
+];
+
+const MAPS = [
+  { name:"Ascent",   attackWin:48.9, defenseWin:51.1 },
+  { name:"Bind",     attackWin:46.2, defenseWin:53.8 },
+  { name:"Haven",    attackWin:50.4, defenseWin:49.6 },
+  { name:"Split",    attackWin:44.8, defenseWin:55.2 },
+  { name:"Icebox",   attackWin:52.1, defenseWin:47.9 },
+  { name:"Breeze",   attackWin:53.6, defenseWin:46.4 },
+  { name:"Fracture", attackWin:47.5, defenseWin:52.5 },
+  { name:"Pearl",    attackWin:45.9, defenseWin:54.1 },
+  { name:"Lotus",    attackWin:49.1, defenseWin:50.9 },
+  { name:"Sunset",   attackWin:51.3, defenseWin:48.7 },
+];
+
+/* =========================================================================
+   RESERVADO PARA INTEGRAÇÃO FUTURA COM A RIOT GAMES API
+   -------------------------------------------------------------------------
+   Ao receber a aprovação da chave de desenvolvedor/produção, substitua o
+   corpo desta função para popular AGENTS / WEAPONS / MAPS com dados reais
+   vindos de um backend próprio (nunca chame a Riot API diretamente do
+   navegador do usuário, pois isso exporia a chave de API).
+
+   Exemplo de uso pretendido (executado no SEU SERVIDOR, não no cliente):
+
+     const res = await fetch(
+       "https://americas.api.riotgames.com/val/content/v1/contents",
+       { headers: { "X-Riot-Token": process.env.RIOT_API_KEY } }
+     );
+     const data = await res.json();
+
+   O front-end então consumiria apenas o seu próprio endpoint, por exemplo:
+     const res = await fetch("/api/stats/agents");
+   ========================================================================= */
+async function fetchLiveDataPlaceholder() {
+  // TODO (pós-aprovação): substituir mocks por chamada real ao backend-proxy.
+  // Mantido vazio propositalmente nesta fase de revisão.
+  console.info("[VCT Stats Hub] Usando dados simulados. Integração com a Riot API pendente de aprovação.");
+  return null;
+}
+fetchLiveDataPlaceholder();
+
+/* =========================================================================
+   RENDERIZAÇÃO — AGENTES
+   ========================================================================= */
+function initials(name){
+  return name.split(/[\s/]+/).map(w=>w[0]).join("").slice(0,2).toUpperCase();
+}
+
+function renderAgents(){
+  const roleVal = document.getElementById("roleFilter").value;
+  const sortVal = document.getElementById("agentSort").value;
+
+  let list = AGENTS.filter(a => roleVal === "all" || a.role === roleVal);
+
+  if (sortVal === "winrate") list.sort((a,b)=> b.winRate - a.winRate);
+  else if (sortVal === "pickrate") list.sort((a,b)=> b.pickRate - a.pickRate);
+  else if (sortVal === "name") list.sort((a,b)=> a.name.localeCompare(b.name));
+
+  const grid = document.getElementById("agentGrid");
+  grid.innerHTML = list.map(a => `
+    <div class="card">
+      <span class="tier ${a.tier}">TIER ${a.tier}</span>
+      <div class="card-top">
+        <div class="avatar" style="background:${a.color}22; color:${a.color}; border-color:${a.color}55;">
+          ${initials(a.name)}
+        </div>
+        <div class="info">
+          <h3>${a.name}</h3>
+          <div class="role">${a.role}</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="stat-row"><span>Win Rate</span><b>${a.winRate.toFixed(1)}%</b></div>
+        <div class="bar-bg"><div class="bar-fill alt" style="width:${a.winRate}%"></div></div>
+        <div class="stat-row"><span>Pick Rate</span><b>${a.pickRate.toFixed(1)}%</b></div>
+        <div class="bar-bg"><div class="bar-fill pick" style="width:${Math.min(a.pickRate*2.2,100)}%"></div></div>
+      </div>
+    </div>
+  `).join("");
+}
+
+document.getElementById("roleFilter").addEventListener("change", renderAgents);
+document.getElementById("agentSort").addEventListener("change", renderAgents);
+
+/* =========================================================================
+   RENDERIZAÇÃO — ARMAS
+   ========================================================================= */
+let weaponSortKey = "pickRate";
+let weaponSortDir = -1;
+
+function renderWeapons(){
+  const catVal = document.getElementById("weaponCatFilter").value;
+  let list = WEAPONS.filter(w => catVal === "all" || w.category === catVal);
+
+  list.sort((a,b) => {
+    const av = a[weaponSortKey], bv = b[weaponSortKey];
+    if (typeof av === "string") return av.localeCompare(bv) * weaponSortDir * -1;
+    return (av - bv) * weaponSortDir;
+  });
+
+  const body = document.getElementById("weaponTableBody");
+  body.innerHTML = list.map(w => `
+    <tr>
+      <td>
+        <span class="weapon-name">${w.name}</span>
+        <span class="weapon-cat">${w.category}</span>
+      </td>
+      <td>${w.damageBody}</td>
+      <td>${w.fireRate.toFixed(2)}/s</td>
+      <td>${w.price === 0 ? "Grátis" : w.price.toLocaleString("pt-BR")}</td>
+      <td>
+        <span class="mini-bar"><span class="mini-bar-fill" style="width:${Math.min(w.pickRate,100)}%"></span></span>
+        ${w.pickRate.toFixed(1)}%
+      </td>
+      <td>${w.winRate.toFixed(1)}%</td>
+    </tr>
+  `).join("");
+
+  document.querySelectorAll("thead th").forEach(th=>{
+    th.classList.toggle("sorted", th.dataset.key === weaponSortKey);
+  });
+}
+
+document.getElementById("weaponCatFilter").addEventListener("change", renderWeapons);
+document.querySelectorAll("thead th[data-key]").forEach(th=>{
+  th.addEventListener("click", () => {
+    const key = th.dataset.key;
+    if (weaponSortKey === key) weaponSortDir *= -1;
+    else { weaponSortKey = key; weaponSortDir = -1; }
+    renderWeapons();
+  });
+});
+
+/* =========================================================================
+   RENDERIZAÇÃO — MAPAS
+   ========================================================================= */
+function renderMaps(){
+  const grid = document.getElementById("mapGrid");
+  grid.innerHTML = MAPS.map(m => `
+    <div class="map-card">
+      <h3>${m.name} <span class="badge">Competitivo</span></h3>
+      <div class="side-split">
+        <div class="side-box att">
+          <div class="pct">${m.attackWin.toFixed(1)}%</div>
+          <div class="lbl">Ataque</div>
+        </div>
+        <div class="side-box def">
+          <div class="pct">${m.defenseWin.toFixed(1)}%</div>
+          <div class="lbl">Defesa</div>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+/* =========================================================================
+   NAVEGAÇÃO ENTRE ABAS
+   ========================================================================= */
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.tab).classList.add("active");
+  });
+});
+
+/* =========================================================================
+   INICIALIZAÇÃO
+   ========================================================================= */
+renderAgents();
+renderWeapons();
+renderMaps();
+</script>
+
+</body>
+</html>
